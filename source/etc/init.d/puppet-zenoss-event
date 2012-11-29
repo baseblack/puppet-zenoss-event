@@ -14,7 +14,7 @@ PIDFILE=/var/run/$NAME
 case "$1" in
   start)
         echo "[`date`] Starting: $DESC" >> $LOGFILE 2>&1
-        start-stop-daemon --background --start --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- 80 >> $LOGFILE 2>&1
+        start-stop-daemon --background --start --make-pidfile --pidfile $PIDFILE --exec $DAEMON  >> $LOGFILE 2>&1
         ;;
   stop)
         echo "[`date`] Stopping: $DESC" >> $LOGFILE 2>&1
