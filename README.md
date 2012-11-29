@@ -3,13 +3,13 @@ puppet-zenoss-event
 
 Create zenoss events from Puppet runs - even masterless ones.
 
-** Synopsis
+##Synopsis
 This is a noddy python script that when started using the included
 old skool init script (read: "upstart is pants") will daemonize 
 itself. Whilst lurking in the background, puppet-zenoss-event will
 use inotify to check when the puppet
 
-** Caveat emptor - you get what you pay for
+##Caveat emptor - you get what you pay for
 The code itself works and is tested. No effort has been spent
 to make this easy to install on anything by Ubuntu - and even
 then it is left to the reader to figure out how to automate
