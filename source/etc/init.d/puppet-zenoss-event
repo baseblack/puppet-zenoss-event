@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/local/sbin/puppet-zenoss-event
+NAME=puppet-zenoss-event
+DESC=puppet-zenoss-event
+
+test -x $DAEMON || exit 0
+
+LOGFILE=/var/log/$NAME
+PIDFILE=/var/run/$NAME
+
+
+case "$1" in
+  start)
+        echo "[`date`] Starting: $DESC" >> $LOGFILE 2>&1
+        start-stop-daemon --background --start --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- 80 >> $LOGFILE 2>&1
+        ;;
+  stop)
+        echo "[`date`] Stopping: $DESC" >> $LOGFILE 2>&1
+        start-stop-daemon --stop --retry=TERM/30/KILL/5 --pidfile $PIDFILE
+        ;;
+  *)
+        echo "Usage: $0 {start|stop)" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

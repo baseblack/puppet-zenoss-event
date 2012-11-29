@@ -1,0 +1,107 @@
+#!/usr/bin/env python
+
+import json
+import pyinotify
+import socket
+import urllib
+import urllib2
+import yaml
+
+ZENOSS_INSTANCE = 'http://zenoss.server.example.com:8080'
+ZENOSS_USERNAME = 'you'
+ZENOSS_PASSWORD = 'yoursupersecretpassw0rd'
+HOSTNAME = socket.getfqdn()
+#HOSTNAME = socket.gethostname()
+
+ROUTERS = {'MessagingRouter': 'messaging',
+           'EventsRouter': 'evconsole',
+           'ProcessRouter': 'process',
+           'ServiceRouter': 'service',
+           'DeviceRouter': 'device',
+           'NetworkRouter': 'network',
+           'TemplateRouter': 'template',
+           'DetailNavRouter': 'detailnav',
+           'ReportRouter': 'report',
+           'MibRouter': 'mib',
+           'ZenPackRouter': 'zenpack'}
+
+
+class ZenossAPI():
+    def __init__(self, debug=False):
+        """
+        Initialize the API connection, log in, and store authentication cookie
+        """
+        # Use the HTTPCookieProcessor as urllib2 does not save cookies by default
+        self.urlOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
+        if debug:
+            self.urlOpener.add_handler(urllib2.HTTPHandler(debuglevel=1))
+        self.reqCount = 1
+
+        # Contruct POST params and submit login.
+        loginParams = urllib.urlencode(dict(
+                        __ac_name = ZENOSS_USERNAME,
+                        __ac_password = ZENOSS_PASSWORD,
+                        submitted = 'true',
+                        came_from = ZENOSS_INSTANCE + '/zport/dmd'))
+        self.urlOpener.open(ZENOSS_INSTANCE + '/zport/acl_users/cookieAuthHelper/login',
+                            loginParams)
+
+    def _router_request(self, router, method, data=[]):
+        if router not in ROUTERS:
+            raise Exception('Router "' + router + '" not available.')
+
+        try:
+            req = urllib2.Request(ZENOSS_INSTANCE + '/zport/dmd/' +
+                              ROUTERS[router] + '_router')
+            req.add_header('Content-type', 'application/json; charset=utf-8')
+            reqData = json.dumps([dict(
+                    action=router,
+                    method=method,
+                    data=data,
+                    type='rpc',
+                    tid=self.reqCount)])
+            self.reqCount += 1
+
+            response = json.loads(self.urlOpener.open(req, reqData).read())
+        except Exception, e:
+            raise e
+
+        return response
+
+    def create_event_on_device(self, device, severity, summary):
+        if severity not in ('Critical', 'Error', 'Warning', 'Info', 'Debug', 'Clear'):
+            raise Exception('Severity "' + severity + '" is not valid.')
+
+        data = dict(device=device, summary=summary, severity=severity,
+                    component='puppet', evclasskey='Puppet run failed', evclass='/Puppet/Run')
+        return self._router_request('EventsRouter', 'add_event', [data])
+
+
+class EventHandler(pyinotify.ProcessEvent):
+    def __init__(self):
+        """
+        Initialize zenoss alert mechanism
+        """
+        self.z = ZenossAPI()
+
+    def zenossalert(self):
+        self.z.create_event_on_device(HOSTNAME, 'Error', 'Puppet run failure')
+
+    def process_IN_DELETE(self, event):
+        try:
+            f = open('/var/lib/puppet/state/last_run_summary.yaml')
+            laststate = yaml.safe_load(f)
+            f.close()
+            if laststate['events']['failure'] > 0:
+                self.zenossalert()
+
+        except Exception, e:
+            raise e
+
+handler = EventHandler()
+wm = pyinotify.WatchManager()
+wdd = wm.add_watch('/var/lib/puppet/state', pyinotify.IN_DELETE, rec=True)
+
+notifier = pyinotify.Notifier(wm, handler)
+notifier.loop()
+

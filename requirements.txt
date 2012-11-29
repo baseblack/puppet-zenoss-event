@@ -1,0 +1,8 @@
+# I'd recommend getting these from your distro really.
+# But the cool kids will judge me if this file isn't here
+pyinotify>=0.8.9
+json>=1.9
+urllib>=1.17
+urllib2>=2.6
+yaml>=3.09
+
