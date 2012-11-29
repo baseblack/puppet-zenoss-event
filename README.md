@@ -14,8 +14,8 @@ None of this would be necessary if Puppet didn't abuse return codes.
 
 ##Caveat emptor - you get what you pay for
 This code might break stuff. But don't blame me, it was Puppet that
-that chose to break Unix in the first place - I'm just the mopman
-cleaning up the mess left behind.
+chose to break Unix in the first place - I'm just the mopman
+cleaning up the mess they left behind.
 
 The code itself works and is tested in production. No effort has been
 spent to make this easy to install on anything by Ubuntu - and even
