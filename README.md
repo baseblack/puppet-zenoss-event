@@ -7,9 +7,10 @@ Create zenoss events from Puppet runs - even masterless ones.
 This is a noddy python script that when started using the included
 old skool init script (read: "upstart is pants") will daemonize 
 itself. Whilst lurking in the background, puppet-zenoss-event will
-use inotify to check when a puppet run has failed. It will then
-raise an event on a Zenoss instance to that effect. None of this
-would be necessary if Puppet didn't abuse return codes.
+use inotify to check when a file that suggests a puppet run has failed.
+It will then raise an event on a Zenoss instance to that effect.
+
+None of this would be necessary if Puppet didn't abuse return codes.
 
 ##Caveat emptor - you get what you pay for
 This code might break stuff. But don't blame me, it was Puppet that
