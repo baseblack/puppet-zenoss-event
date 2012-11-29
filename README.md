@@ -18,7 +18,7 @@ chose to break Unix in the first place - I'm just the mopman
 cleaning up the mess they left behind.
 
 The code itself works and is tested in production. No effort has been
-spent to make this easy to install on anything by Ubuntu - and even
+spent to make this easy to deploy on anything but Ubuntu - and even
 then it is left to the reader to figure out how to automate the
 install. Might I recommend [fpm](https://github.com/jordansissel/fpm/)?
 
